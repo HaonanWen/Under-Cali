@@ -310,7 +310,6 @@ class AdaptiveTester:
                 for k, v in batch.items()}
         
         if not self.should_trigger_adaptation(batch, uncertainty_scores):
-            logger.info("不触发更新")
             return 0, 0.0, self.GDC_stats
         
         GDC_cali = self._unwrap(self.adaptive_GDC_calibration) 
@@ -557,11 +556,6 @@ class AdaptiveTester:
         
         if test:
             
-            # wo_cali = F.mse_loss(
-            #     outputs_model["pred"] * outputs_model["mask"],
-            #     outputs_model["true"] * outputs_model["mask"],
-            #     reduction='none'
-            # ).mean(dim=[1, 2])
             wo_cali = F.mse_loss(
                 model_outputs["pred"] * model_outputs["mask"],
                 model_outputs["true"] * model_outputs["mask"],
@@ -1833,7 +1827,6 @@ class Exp_Main(Exp_Basic):
 
             logger.info(f'>>>>>>>{itr_i} testing finished <<<<<<<')
 
-        logger.info('\>>>>>>> 所有迭代测试完成，开始对比分析（基于内存列表） <<<<<<<')
 
         # iter_improvements 
         if iter_improvements and len(iter_improvements) > 0:
