@@ -66,20 +66,3 @@ Once the file is in place, our code will handle the final formatting (generating
 bash scripts/model_name/USHCN.sh
 ```
 - Testing will be automatically conducted once the training finished. If you wish to run test only, change command line argument `--is_training` in training script from 1 to 0 and run the script.
-
-## Results
-
-### Main Results
-Extensive experiments on 4 real-world datasets (PhysioNet, MIMIC, HumanActivity, USHCN) demonstrate that UnderCali outperforms existing state-of-the-art (SOTA) methods in both MSE and MAE metrics.
-
-
-
-## Acknowledgement
-
-This work was partially supported by the National Natural Science Foundation of China (No.62472174) and the Fundamental Research Funds for the Central Universities.
-
-**We appreciate the following GitHub repos a lot for their valuable code and efforts.**
-
-Pyomnits (https://github.com/Ladbaby/PyOmniTS)
-
-
