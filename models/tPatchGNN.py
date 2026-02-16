@@ -342,7 +342,6 @@ class gcn(nn.Module):
 
         h = torch.cat(out, dim=1) # concat x and x_conv
         h = self.mlp(h)
-        # h = F.dropout(h, self.dropout, training=self.training)   # 加的dropout
         return F.relu(h)
 
 class PositionalEncoding(nn.Module):
