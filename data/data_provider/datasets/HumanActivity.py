@@ -81,7 +81,7 @@ class Data(Dataset):
         - y_mask
         - sample_ID
         '''
-        return sample_dict  # 还没有padding
+        return sample_dict  
 
     def __len__(self):
         return len(self.data)
@@ -133,7 +133,6 @@ class Data(Dataset):
         if self.flag != "val":
             # val set will follow the setting of train set
             # determine the max number of observations along time, among all samples
-            # 计算整个数据集中每个样本的输入序列和输出序列的最大长度（不规则序列的最大观测点数），以及如果使用分块collate_fn，则计算每个patch的最大观测点数
             test_all_data = train_data + val_data + test_data
             self.seq_len_max_irr = 0
             self.pred_len_max_irr = 0
