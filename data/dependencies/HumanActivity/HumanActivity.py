@@ -254,30 +254,6 @@ def get_person_id(record_id):
     return person_id
 
 def Activity_time_chunk(data, history, pred_window):
-    '''
-    将时间序列数据分割成多个时间块
-    Args:
-        data: List of tuples (record_id, tt, vals, mask)
-        history: Length of history window in milliseconds
-        pred_window: Length of prediction window in milliseconds
-    Returns:
-        chunk_data: List of dictionaries with keys:
-            - sample_ID: Unique identifier for the chunk
-            - x_mark: Normalized time markers for input sequence
-            - y_mark: Normalized time markers for target sequence
-            - x: Input values tensor
-            - y: Target values tensor
-            - x_mask: Input mask tensor
-            - y_mask: Target mask tensor
-    每个时间块包含一个输入窗口（x）和一个预测窗口（y），输入窗口长度为history，预测窗口长度为pred_window。
-    时间块之间的起始时间间隔为4000毫秒（4秒）。步长为4000，按照时间间隔划分时间块。并不是观测到的时间点划分。
-    例如，假设history=8000ms，pred_window=2000ms，那么时间块划分如下：
-        - 时间块1：输入窗口[0ms, 8000ms)，预测窗口[8000ms, 10000ms)样本1
-        - 时间块2：输入窗口[4000ms, 12000ms)，预测窗口[12000ms, 14000ms)
-        - 时间块3：输入窗口[8000ms, 16000ms)，预测窗口[16000ms, 18000ms)
-    以此类推，直到覆盖整个时间序列数据的时间范围。
-    这样划分时间块可以确保模型在不同时间段内都能学习到输入与预测之间的关系，同时也能处理不规则采样的数据。
-    '''
 
     chunk_data = []
     history = history # ms
