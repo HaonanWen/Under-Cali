@@ -42,7 +42,6 @@ class OfflineUncertaintyEstimator(nn.Module):
         self.enc_in = enc_in
         self.register_buffer("error_min", torch.tensor(0.0))
         self.register_buffer("error_max", torch.tensor(1.0))
-        self.mask_emb = nn.Embedding(2, 1)  
         
         in_dim_x = self.seq_len * self.enc_in
         in_dim_y = self.pred_len * self.enc_in
@@ -77,18 +76,11 @@ class OfflineUncertaintyEstimator(nn.Module):
             nn.Sigmoid(),  
         )
 
-    def forward(self, x, pred, y_mask):
+    def forward(self, x, pred):
         """
         forward 
         x: [B, seq_len, enc_in]
         pred: [B, pred_len, enc_in]
-        y_mask: [B, pred_len, enc_in]
-        return:
-            {
-              'unc_per_channel': [B, enc_in],  
-              'alpha': [B, enc_in],            
-              'unc_scalar': [B],               
-            }
         """
         batch_size = x.shape[0]
 
@@ -96,14 +88,9 @@ class OfflineUncertaintyEstimator(nn.Module):
         x_flat = x.reshape(batch_size, -1)                  # [B, seq_len * enc_in]
         pred_flat = pred.reshape(batch_size, -1)            # [B, pred_len * enc_in]
 
-        if y_mask is None:
-            y_mask = torch.ones_like(pred)
-        y_idx_flat = (y_mask > 0.0).long().reshape(batch_size, -1)  # [B, pred_len * enc_in]
-        mask_feat = self.mask_emb(y_idx_flat).squeeze(-1)           # [B, pred_len * enc_in]
-        pred = pred_flat + mask_feat  # [B, pred_len * enc_in]
 
         feat_x = self.mlp_x(x_flat)         # [B, hidden]
-        feat_y = self.mlp_y(pred)           # [B, hidden]
+        feat_y = self.mlp_y(pred_flat)           # [B, hidden]
         feat = torch.cat([feat_x, feat_y], dim=1)  # [B, hidden*2]
         fused = self.fusion(feat)                  # [B, fusion_out]
 
@@ -310,6 +297,7 @@ class AdaptiveTester:
                 for k, v in batch.items()}
         
         if not self.should_trigger_adaptation(batch, uncertainty_scores):
+            logger.info("不触发更新")
             return 0, 0.0, self.GDC_stats
         
         GDC_cali = self._unwrap(self.adaptive_GDC_calibration) 
@@ -475,7 +463,7 @@ class AdaptiveTester:
             true_errors_norm = (true_errors - ue_mod.error_min) / denom
             true_errors_norm = true_errors_norm.clamp(0.0, 1.0)
             
-            ue_predictions = ue_mod(x_batch.detach(), calibrated_pred.detach(), mask_batch.detach())
+            ue_predictions = ue_mod(x_batch.detach(), calibrated_pred.detach())
             per_sample_ue = F.l1_loss(ue_predictions, true_errors_norm, reduction='none')
             loss = per_sample_ue.mean()
             
@@ -535,7 +523,7 @@ class AdaptiveTester:
             calibrated_pred = GDC_cali.expert_reliable.output_calibration(model_outputs["pred"])
 
         
-            uncertainty_scores = self.uncertainty_estimator(batch["x"], calibrated_pred, model_outputs["mask"])
+            uncertainty_scores = self.uncertainty_estimator(batch["x"], calibrated_pred)
 
         
         GDC_cali = self._unwrap(self.adaptive_GDC_calibration)  
@@ -556,6 +544,11 @@ class AdaptiveTester:
         
         if test:
             
+            # wo_cali = F.mse_loss(
+            #     outputs_model["pred"] * outputs_model["mask"],
+            #     outputs_model["true"] * outputs_model["mask"],
+            #     reduction='none'
+            # ).mean(dim=[1, 2])
             wo_cali = F.mse_loss(
                 model_outputs["pred"] * model_outputs["mask"],
                 model_outputs["true"] * model_outputs["mask"],
@@ -1182,7 +1175,7 @@ class Exp_Main(Exp_Basic):
                     (prediction_errors - ue_mod.error_min.cpu()) / (ue_mod.error_max.cpu() - ue_mod.error_min.cpu() + 1e-8)
 
 
-            return all_uncertainty_inputs, all_predictions, all_y_masks, normalized_errors
+            return all_uncertainty_inputs, all_predictions, normalized_errors
             
 
         uncertainty_estimator = OfflineUncertaintyEstimator(
@@ -1192,8 +1185,8 @@ class Exp_Main(Exp_Basic):
             hidden_dim=getattr(configs, 'uncertainty_hidden_dim', 128)
         ).to(device)
 
-        train_inputs, train_preds, train_y_masks, train_errors = _collect_data_for_estimator(train_loader, model, uncertainty_estimator, is_train=True)
-        val_inputs, val_preds, val_y_masks, val_errors = _collect_data_for_estimator(val_loader, model, uncertainty_estimator, is_train=False)
+        train_inputs, train_preds, train_errors = _collect_data_for_estimator(train_loader, model, uncertainty_estimator, is_train=True)
+        val_inputs, val_preds, val_errors = _collect_data_for_estimator(val_loader, model, uncertainty_estimator, is_train=False)
         
         optimizer = torch.optim.Adam(
             uncertainty_estimator.parameters(),
@@ -1205,10 +1198,10 @@ class Exp_Main(Exp_Basic):
         uncertainty_estimator.train()
                
         train_dataset = torch.utils.data.TensorDataset(
-            train_inputs, train_preds, train_y_masks, train_errors
+            train_inputs, train_preds, train_errors
         )
         val_dataset = torch.utils.data.TensorDataset(
-            val_inputs, val_preds, val_y_masks, val_errors
+            val_inputs, val_preds, val_errors
         )
 
         train_data_loader = torch.utils.data.DataLoader(
@@ -1233,13 +1226,12 @@ class Exp_Main(Exp_Basic):
             total_loss = 0
             num_batches = 0
             
-            for x_batch, pred_batch, y_mask, error_batch in train_data_loader:
+            for x_batch, pred_batch, error_batch in train_data_loader:
                 x_batch = x_batch.to(device)
                 pred_batch = pred_batch.to(device)
-                y_mask = y_mask.to(device)
                 error_batch = error_batch.to(device)
                 
-                predicted_uncertainty = uncertainty_estimator(x_batch, pred_batch, y_mask)
+                predicted_uncertainty = uncertainty_estimator(x_batch, pred_batch)
                 
                 loss = criterion(predicted_uncertainty, error_batch)
                 
@@ -1257,15 +1249,14 @@ class Exp_Main(Exp_Basic):
 
                 # eval
                 total_val_loss = 0
-                for x_batch, pred_batch, y_mask, error_batch in val_data_loader:
+                for x_batch, pred_batch, error_batch in val_data_loader:
                     x_batch = x_batch.to(device)
                     pred_batch = pred_batch.to(device)
-                    y_mask = y_mask.to(device)
                     error_batch = error_batch.to(device)
                     
                     with torch.no_grad():
-                        predicted_uncertainty = uncertainty_estimator(x_batch, pred_batch, y_mask)
-                        val_loss = criterion(predicted_uncertainty, error_batch)   # y_mask
+                        predicted_uncertainty = uncertainty_estimator(x_batch, pred_batch)
+                        val_loss = criterion(predicted_uncertainty, error_batch)
                     
                     total_val_loss += val_loss.item()
 
@@ -1827,6 +1818,7 @@ class Exp_Main(Exp_Basic):
 
             logger.info(f'>>>>>>>{itr_i} testing finished <<<<<<<')
 
+        logger.info('\>>>>>>> 所有迭代测试完成，开始对比分析（基于内存列表） <<<<<<<')
 
         # iter_improvements 
         if iter_improvements and len(iter_improvements) > 0:
