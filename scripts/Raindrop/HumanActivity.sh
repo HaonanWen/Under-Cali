@@ -14,7 +14,7 @@ dataset_name=$(basename "$0" .sh) # file name
 seq_len=3000
 
 for pred_len in 300; do
-    $launch_command main_new.py \
+    $launch_command main.py \
         --is_training 1 \
         --n_layers 2 \
         --dropout 0.3 \

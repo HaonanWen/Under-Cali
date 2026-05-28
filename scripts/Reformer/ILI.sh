@@ -15,7 +15,7 @@ seq_len=36
 label_len=18
 # for pred_len in 36; do
 for pred_len in 24 36 48 60; do
-    $launch_command main_new.py \
+    $launch_command main.py \
     --is_training 0 \
     --e_layers 2 \
     --d_layers 1 \

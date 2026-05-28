@@ -26,7 +26,7 @@ for pred_len in 300; do
             for a_all in "${all_alphas[@]}"; do
                 for k_all in "${all_ks[@]}"; do
                     echo "Running  grid a_trg=$a_trg k_trg=$k_trg a_all=$a_all k_all =$k_all"
-                    $launch_command main_new.py \
+                    $launch_command main.py \
                     --is_training 1 \
                     --d_model 64 \
                     --n_layers 1 \

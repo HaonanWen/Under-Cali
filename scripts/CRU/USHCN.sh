@@ -19,7 +19,7 @@ all_ks=(0.25)
 seq_len=150
 for pred_len in 3; do
     echo "Running UnderCali grid a_trg=$trg_alphas k_trg=$trg_ks a_all=$all_alphas k_all =$all_ks"
-    $launch_command main_new.py \
+    $launch_command main.py \
         --is_training 0 \
         --loss "MSE" \
         --d_model 10 \

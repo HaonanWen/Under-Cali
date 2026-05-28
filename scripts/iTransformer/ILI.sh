@@ -14,7 +14,7 @@ dataset_name=$(basename "$0" .sh) # file name
 seq_len=36
 label_len=18
 for pred_len in 24 36 48 60; do
-    $launch_command main_new.py \
+    $launch_command main.py \
     --is_training 0 \
     --e_layers 4 \
     --d_model 512 \

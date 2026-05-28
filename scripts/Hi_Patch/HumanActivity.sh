@@ -19,7 +19,7 @@ all_ks=(0.25)
 seq_len=1000  #1000, 2000, 3000
 for pred_len in 1000; do
     echo "Running UnderCali grid a_trg=$trg_alphas k_trg=$trg_ks a_all=$all_alphas k_all =$all_ks"
-    $launch_command main_new.py \
+    $launch_command main.py \
         --is_training 1 \
         --loss "MSE" \
         --collate_fn "collate_fn_patch" \

@@ -16,7 +16,7 @@ label_len=48
 # for pred_len in 168; do
 # for pred_len in 96; do
 for pred_len in 96 192 336 720; do
-    $launch_command main_new.py \
+    $launch_command main.py \
     --is_training 1 \
     --loss "MSE" \
     --task_name "long_term_forecast" \

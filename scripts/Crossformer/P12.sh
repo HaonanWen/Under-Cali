@@ -13,7 +13,7 @@ dataset_name=$(basename "$0" .sh) # file name
 
 seq_len=36
 for pred_len in 3; do
-    $launch_command main_new.py \
+    $launch_command main.py \
     --is_training 0 \
     --patch_len 6 \
     --loss "MSE" \

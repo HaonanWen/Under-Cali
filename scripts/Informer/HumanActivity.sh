@@ -13,7 +13,7 @@ dataset_name=$(basename "$0" .sh) # file name
 
 seq_len=3000
 for pred_len in 300; do
-    $launch_command main_new.py \
+    $launch_command main.py \
         --is_training 0 \
         --loss "MSE" \
         --use_multi_gpu $use_multi_gpu \

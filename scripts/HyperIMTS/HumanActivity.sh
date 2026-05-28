@@ -57,7 +57,7 @@ for pred_len in 300; do
 done
 
 # for pred_len in 300; do
-#     $launch_command main_new.py \
+#     $launch_command main.py \
 #         --is_training 1 \
 #         --loss "MSE" \
 #         --d_model 128 \
