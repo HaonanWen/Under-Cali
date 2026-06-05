@@ -9,7 +9,6 @@
 </div>
 
 
-
 This code is the official PyTorch implementation of our paper accepted by KDD 2026: Online Irregular Multivariate Time Series Forecasting via Uncertainty-Driven Dual-Expert Calibration.
 
 
@@ -95,7 +94,3 @@ If you find our work useful in your research, please consider citing our paper:
 # 🙏 Acknowledgement
 
 This code is built upon the [PyOmniTS](https://github.com/Ladbaby/PyOmniTS) library. We thank the contributors of PyOmniTS for providing a solid foundation for our implementation. We also acknowledge the original authors of the datasets and baselines used in our experiments for making their work publicly available.
-=======
-# Under-Cali
-Official code for "Online Irregular Multivariate Time Series Forecasting via Uncertainty-Driven Dual-Expert Calibration"
->>>>>>> origin/main
