@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <div align="center">
     <h1 align="center">Online Irregular Multivariate Time Series Forecasting via Uncertainty-Driven Dual-Expert Calibration</h1>
 
