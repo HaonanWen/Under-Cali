@@ -80,14 +80,11 @@ bash scripts/model_name/USHCN.sh
 If you find our work useful in your research, please consider citing our paper:
 
 ```bibtex
-@misc{wen2026undercali,
-      title={Online Irregular Multivariate Time Series Forecasting via Uncertainty-Driven Dual-Expert Calibration}, 
-      author={Haonan Wen and Hanyang Chen and Songhe Feng},
-      year={2026},
-      eprint={2605.28603},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2605.28603}, 
+@article{wen2026online,
+  title={Online Irregular Multivariate Time Series Forecasting via Uncertainty-Driven Dual-Expert Calibration},
+  author={Wen, Haonan and Chen, Hanyang and Feng, Songhe},
+  journal={arXiv preprint arXiv:2605.28603},
+  year={2026}
 }
 ```
 
